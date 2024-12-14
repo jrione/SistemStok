@@ -1,12 +1,15 @@
-﻿Public Class Login
+﻿Imports BCrypt.Net
+Imports Npgsql
+Public Class Login
     Dim dbClient = New Koneksi
     Public Structure UserData
         Public Username As String
         Public Password As String
     End Structure
-
     Private Sub Login_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         dbClient.Connect()
+        Me.MaximizeBox = False
+        Me.FormBorderStyle = FormBorderStyle.FixedDialog
         Me.Text = "Login Aplikasi Manajemen Stok Digital"
         Me.Size = New Drawing.Size(500, 300)
         Me.StartPosition = FormStartPosition.CenterScreen
@@ -84,10 +87,23 @@
         loginData.Username = Username.Text
         loginData.Password = Password.Text
 
-        Dim Dashboard As New Dashboard(dbClient, loginData)
-        Me.Hide()
-        Dashboard.ShowDialog()
-        Me.Close()
-    End Sub
+        Dim passwordHash As String = dbClient.GetPasswordHash(loginData.Username)
+        If passwordHash Is Nothing Then
+            MessageBox.Show("Invalid Username/Password!")
+            Return
+        End If
 
+        If BCrypt.Net.BCrypt.Verify(loginData.Password, passwordHash) Then
+            Dim Dashboard As New Dashboard(dbClient, loginData)
+            Me.Hide()
+            Dashboard.ShowDialog()
+            Me.Close()
+        Else
+            MessageBox.Show("Invalid Username/Password!")
+        End If
+    End Sub
+    Public Function HashPassword(password As String) As String
+        Dim hashedPassword As String = BCrypt.Net.BCrypt.HashPassword(password)
+        Return hashedPassword
+    End Function
 End Class
