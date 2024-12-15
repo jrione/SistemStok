@@ -83,6 +83,11 @@ Public Class Login
     End Sub
 
     Private Sub LoginBtn_Click(sender As Object, e As EventArgs) Handles LoginBtn.Click
+        With LoginBtn
+            .Text = "Mohon Tunggu"
+            .Enabled = False
+        End With
+
         Dim loginData As UserData
         loginData.Username = Username.Text
         loginData.Password = Password.Text
@@ -101,6 +106,11 @@ Public Class Login
         Else
             MessageBox.Show("Invalid Username/Password!")
         End If
+
+        With LoginBtn
+            .Text = "Login"
+            .Enabled = True
+        End With
     End Sub
     Public Function HashPassword(password As String) As String
         Dim hashedPassword As String = BCrypt.Net.BCrypt.HashPassword(password)
