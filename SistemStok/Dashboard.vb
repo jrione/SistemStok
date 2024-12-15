@@ -4,7 +4,7 @@ Public Class Dashboard
     Public Sub New(dbClient As Koneksi, loginData As Login.UserData)
         InitializeComponent()
         Me.Text = loginData.Username
-        Me.Size = New Drawing.Size(500, 300)
+        Me.Size = New Drawing.Size(1080, 900)
         Me.StartPosition = FormStartPosition.CenterScreen
     End Sub
     Enum Kategori

@@ -1,8 +1,7 @@
 ﻿Imports Npgsql
 Public Class Koneksi
-    Private connString As String
     Public Function Connect() As NpgsqlConnection
-        connString = "Server=127.0.0.1:5432;Database=stokdb;Userid=postgres;Password='admin'"
+        Dim connString As String = Environment.GetEnvironmentVariable("CONNSTRING")
         Dim conn As New NpgsqlConnection(connString)
         Try
             conn.Open()
