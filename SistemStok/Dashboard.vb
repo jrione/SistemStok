@@ -56,17 +56,34 @@ Public Class Dashboard
 
 
         Dim NewPage As New TabPage("NEWWWW")
-        Dim scrollablePanel2 As New Panel()
-        scrollablePanel2.Size = New Size(300, 200)
-        scrollablePanel2.Location = New Point(10, 10)
-        scrollablePanel2.AutoScroll = True
-        For i As Integer = 1 To 20
-            Dim label As New Label()
-            label.Text = "Label " & i.ToString()
-            label.Location = New Point(10, (i - 1) * 30)
-            scrollablePanel2.Controls.Add(label)
-        Next
-        NewPage.Controls.Add(scrollablePanel2)
+        Dim tablePanel As New TableLayoutPanel()
+        With tablePanel
+            .ColumnCount = 2
+            .RowCount = 5
+            .Size = New Size(tabControl.ClientSize.Width - 20, 100)
+            .Location = New Point(10, 10)
+            .Dock = DockStyle.Fill
+            .ColumnStyles.Add(New ColumnStyle(SizeType.Absolute, 100))
+            .ColumnStyles.Add(New ColumnStyle(SizeType.Percent, 100))
+        End With
+
+        tablePanel.Controls.Add(New Label() With {.Text = "Kode:", .TextAlign = ContentAlignment.TopRight}, 0, 0)
+        tablePanel.Controls.Add(New Label() With {.Text = "ANJAY"}, 1, 0)
+
+        tablePanel.Controls.Add(New Label() With {.Text = "Kode:", .TextAlign = ContentAlignment.TopRight}, 0, 1)
+        tablePanel.Controls.Add(New Label() With {.Text = "ANJAY"}, 1, 1)
+
+        tablePanel.Controls.Add(New Label() With {.Text = "Kode:", .TextAlign = ContentAlignment.TopRight}, 0, 2)
+        tablePanel.Controls.Add(New Label() With {.Text = "ANJAY"}, 1, 2)
+
+        tablePanel.Controls.Add(New Label() With {.Text = "Kode:", .TextAlign = ContentAlignment.TopRight}, 0, 3)
+        tablePanel.Controls.Add(New Label() With {.Text = "ANJAY"}, 1, 3)
+
+        tablePanel.Controls.Add(New Label() With {.Text = "Kode:", .TextAlign = ContentAlignment.TopRight}, 0, 4)
+        tablePanel.Controls.Add(New Label() With {.Text = "ANJAY"}, 1, 4)
+
+        NewPage.Controls.Add(tablePanel)
+
 
         With tabControl.TabPages
             .Add(AllStockPage)
