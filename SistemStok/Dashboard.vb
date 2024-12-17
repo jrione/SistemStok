@@ -1,19 +1,10 @@
 ﻿Imports Npgsql
 
 Public Class Dashboard
-    Dim dbClient = New Koneksi
-
-    Public Sub New(dbClient As Koneksi, loginData As Login.UserData)
-        InitializeComponent()
-        Me.Text = loginData.Username
-        Me.Size = New Drawing.Size(1080, 900)
-        Me.StartPosition = FormStartPosition.CenterScreen
-    End Sub
-    Enum Kategori
-        Pakaian
-        Buku
-        Perabot
-    End Enum
+    Dim dbClient As Koneksi
+    Dim userData As Login.UserData
+    Dim TinggiPanel As Integer = 800
+    Dim PanjangPanel As Integer = 600
     Structure Produk
         Public kode_barang As String
         Public nama_barang As String
@@ -21,56 +12,86 @@ Public Class Dashboard
         Public qty As Integer
         Public kategori
     End Structure
+    Public Sub New(DBC As Koneksi, LD As Login.UserData)
+        dbClient = DBC
+        userData = LD
+        InitializeComponent()
+
+        With Me
+            .AutoSize = False
+            .Text = userData.Username
+            .Size = New Drawing.Size(TinggiPanel, PanjangPanel)
+            .StartPosition = FormStartPosition.CenterScreen
+            .MaximizeBox = False
+            .FormBorderStyle = FormBorderStyle.FixedDialog
+            .BackColor = Color.White
+        End With
+    End Sub
 
     Private Sub Dashboard_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         Dim data As List(Of Produk) = dbClient.GetAllData()
-        Dim yOffset As Integer = 10
+
+        Dim flowPanel As New FlowLayoutPanel()
+        With flowPanel
+            .Dock = DockStyle.Fill
+            .AutoScroll = True
+            .FlowDirection = FlowDirection.TopDown
+            .WrapContents = False
+        End With
 
         If data IsNot Nothing AndAlso data.Count > 0 Then
+            data = data.OrderBy(Function(x) x.kode_barang).ToList()
             For Each dt In data
-                Dim panel As New Panel()
-                panel.Size = New Drawing.Size(300, 120)
-                panel.Location = New Drawing.Point(10, yOffset)
 
-                Dim labelKode As New Label()
-                labelKode.Text = $"Kode: {dt.kode_barang}"
-                labelKode.AutoSize = True
-                labelKode.Location = New Drawing.Point(10, 10)
-                panel.Controls.Add(labelKode)
+                Dim tablePanel As New TableLayoutPanel()
+                With tablePanel
+                    .AutoSizeMode = AutoSizeMode.GrowAndShrink
+                    .BackColor = Color.White
+                    .BorderStyle = BorderStyle.FixedSingle
+                    .ColumnCount = 2
+                    .RowCount = 5
+                    .Width = Me.ClientSize.Width - 40
+                    .Height = 150
+                    .Margin = New Padding(10)
+                    .ColumnStyles.Add(New ColumnStyle(SizeType.Percent, 30.0F))
+                    .ColumnStyles.Add(New ColumnStyle(SizeType.Percent, 70.0F))
+                    For i As Integer = 0 To .RowCount - 1
+                        .RowStyles.Add(New RowStyle(SizeType.Absolute, 30.0F))
+                    Next
+                End With
 
-                Dim labelNama As New Label()
-                labelNama.Text = $"Nama: {dt.nama_barang}"
-                labelNama.AutoSize = True
-                labelNama.Location = New Drawing.Point(10, 30)
-                panel.Controls.Add(labelNama)
+                AddLabelToTable(tablePanel, "Kode", dt.kode_barang, 0)
+                AddLabelToTable(tablePanel, "Nama", dt.nama_barang, 1)
+                AddLabelToTable(tablePanel, "Kategori", dt.kategori.ToString(), 2)
+                AddLabelToTable(tablePanel, "Harga", "Rp. " & dt.harga.ToString("N0"), 3)
+                AddLabelToTable(tablePanel, "Jumlah", dt.qty.ToString(), 4)
 
-                Dim labelKategori As New Label()
-                labelKategori.Text = $"Kategori: {dt.kategori}"
-                labelKategori.AutoSize = True
-                labelKategori.Location = New Drawing.Point(10, 50)
-                panel.Controls.Add(labelKategori)
-
-                Dim labelHarga As New Label()
-                labelHarga.Text = $"Harga: {dt.harga}"
-                labelHarga.AutoSize = True
-                labelHarga.Location = New Drawing.Point(10, 70)
-                panel.Controls.Add(labelHarga)
-
-                Dim labelJumlah As New Label()
-                labelJumlah.Text = $"Jumlah: {dt.qty}"
-                labelJumlah.AutoSize = True
-                labelJumlah.Location = New Drawing.Point(10, 90)
-                panel.Controls.Add(labelJumlah)
-
-                ' Add the panel to the form
-                Me.Controls.Add(panel)
-
-                ' Update the vertical position for the next panel
-                yOffset += panel.Height + 10 ' Add some space between panels
+                flowPanel.Controls.Add(tablePanel)
             Next
+
+            Me.Controls.Add(flowPanel)
+            flowPanel.Dock = DockStyle.Fill
         Else
-            Console.WriteLine("No data found or an error occurred.")
+            MessageBox.Show("Data  not found.", "Ingpo", MessageBoxButtons.OK, MessageBoxIcon.Information)
         End If
+    End Sub
+
+    Private Sub AddLabelToTable(tablePanel As TableLayoutPanel, key As String, value As String, row As Integer)
+        Dim labelKey As New Label() With {
+            .Text = key & ":",
+            .Font = New Font("Arial", 10, FontStyle.Bold),
+            .Dock = DockStyle.Fill,
+            .TextAlign = ContentAlignment.MiddleLeft
+        }
+
+        Dim labelValue As New Label() With {
+            .Text = ": " & value,
+            .Font = New Font("Arial", 10, FontStyle.Regular),
+            .Dock = DockStyle.Fill,
+            .TextAlign = ContentAlignment.MiddleLeft
+        }
+        tablePanel.Controls.Add(labelKey, 0, row)
+        tablePanel.Controls.Add(labelValue, 1, row)
     End Sub
 
 End Class
