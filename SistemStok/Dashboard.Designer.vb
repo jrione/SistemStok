@@ -26,10 +26,10 @@ Partial Class Dashboard
         '
         'Dashboard
         '
-        Me.AutoScaleDimensions = New System.Drawing.SizeF(8.0!, 16.0!)
+        Me.AutoScaleDimensions = New System.Drawing.SizeF(9.0!, 20.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(731, 359)
-        Me.Margin = New System.Windows.Forms.Padding(4)
+        Me.ClientSize = New System.Drawing.Size(822, 449)
+        Me.Margin = New System.Windows.Forms.Padding(4, 5, 4, 5)
         Me.Name = "Dashboard"
         Me.Text = "Form1"
         Me.ResumeLayout(False)
