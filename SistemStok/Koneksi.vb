@@ -50,7 +50,8 @@ Public Class Koneksi
                 .nama_barang = reader("namabarang").ToString(),
                 .kategori = reader("kategori").ToString(),
                 .harga = reader("harga"),
-                .qty = reader("jumlah")
+                .qty = reader("jumlah"),
+                .img = reader("img_asset")
             }
                 result.Add(produk)
             End While
@@ -62,6 +63,30 @@ Public Class Koneksi
             Return New List(Of Dashboard.Produk)()
         Finally
             conn.Close() ' Ensure the connection is closed
+        End Try
+    End Function
+
+    Public Function Delete(kodeBarang As String) As Boolean
+        Dim query As String = "DELETE FROM barang WHERE kodebarang = @kode"
+        Dim conn As NpgsqlConnection = Connect()
+        Dim cmd As New NpgsqlCommand(query, conn)
+
+        ' Tambahkan parameter untuk kode_barang
+        cmd.Parameters.AddWithValue("@kode", kodeBarang)
+
+        Try
+            ' Eksekusi perintah DELETE
+            Dim rowsAffected As Integer = cmd.ExecuteNonQuery()
+
+            ' Jika baris terpengaruh lebih dari 0, data berhasil dihapus
+            Return rowsAffected > 0
+        Catch ex As Exception
+            ' Tampilkan pesan error jika terjadi kesalahan
+            MsgBox("Error: " & ex.Message)
+            Return False
+        Finally
+            ' Pastikan koneksi selalu ditutup
+            conn.Close()
         End Try
     End Function
 End Class
