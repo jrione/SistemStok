@@ -321,6 +321,12 @@
     <Compile Include="AddData.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="EditData.Designer.vb">
+      <DependentUpon>EditData.vb</DependentUpon>
+    </Compile>
+    <Compile Include="EditData.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Koneksi.vb" />
     <Compile Include="Dashboard.vb">
       <SubType>Form</SubType>

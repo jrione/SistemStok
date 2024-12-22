@@ -227,15 +227,17 @@ Public Class Dashboard
                 Dim btnEdit As New Button()
                 With btnEdit
                     .Text = "Edit"
+                    .Tag = dt.kode_barang
                 End With
+
+                AddHandler btnEdit.Click, AddressOf BtnEdit_Click
+                btnPanel.Controls.Add(btnEdit)
 
                 Dim btnDelete As New Button()
                 With btnDelete
                     .Text = "Hapus"
                     .Tag = dt.kode_barang
                 End With
-
-                btnPanel.Controls.Add(btnEdit)
 
                 AddHandler btnDelete.Click, AddressOf BtnDelete_Click
                 btnPanel.Controls.Add(btnDelete)
@@ -311,4 +313,16 @@ Public Class Dashboard
         End If
     End Sub
 
+    Private Sub BtnEdit_Click(sender As Object, e As EventArgs)
+        ' Ambil tombol yang diklik
+        Dim button As Button = CType(sender, Button)
+
+        ' Ambil kode_barang dari Tag tombol
+        Dim kodeBarang As String = button.Tag.ToString()
+
+        ' Buat instance dari form EditData
+        Dim editForm As New EditDataForm(kodeBarang, dbClient) ' Kirim kode_barang ke form edit
+        editForm.ShowDialog() ' Tampilkan form edit sebagai dialog
+
+    End Sub
 End Class

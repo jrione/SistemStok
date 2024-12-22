@@ -89,4 +89,37 @@ Public Class Koneksi
             conn.Close()
         End Try
     End Function
+
+    Public Function GetDataByKodeBarang(kodeBarang As String) As Dashboard.Produk
+        Dim query As String = "SELECT * FROM barang WHERE kodebarang = @kode"
+        Dim conn As NpgsqlConnection = Connect()
+        Dim cmd As New NpgsqlCommand(query, conn)
+
+        ' Mengikat parameter
+        cmd.Parameters.AddWithValue("@kode", kodeBarang)
+
+        Dim produk As New Dashboard.Produk()
+
+        Try
+            Dim reader As NpgsqlDataReader = cmd.ExecuteReader()
+
+            If reader.Read() Then
+                produk.kode_barang = reader("kodebarang").ToString()
+                produk.nama_barang = reader("namabarang").ToString()
+                produk.kategori = reader("kategori").ToString()
+                produk.harga = Convert.ToInt32(reader("harga")) ' Pastikan konversi tipe data sesuai
+                produk.qty = Convert.ToInt32(reader("jumlah")) ' Pastikan konversi tipe data sesuai
+                ' Jika ada kolom img_asset, pastikan Anda menambahkannya di struktur Produk
+                produk.img = reader("img_asset").ToString() ' Pastikan kolom ini ada
+            End If
+
+            Return produk
+        Catch ex As Exception
+            MsgBox(ex.Message)
+            Return Nothing ' Kembalikan Nothing jika terjadi kesalahan
+        Finally
+            conn.Close() ' Pastikan koneksi ditutup
+        End Try
+    End Function
+
 End Class
