@@ -1,7 +1,10 @@
-﻿Public Class AddDataForm
+﻿Imports System.IO
+Imports System.Diagnostics
+
+
+Public Class AddDataForm
     Inherits Form
 
-    ' Deklarasi kontrol
     Private nameLabel As Label
     Private nameTextBox As TextBox
     Private priceLabel As Label
@@ -11,17 +14,28 @@
     Private categoryLabel As Label
     Private categoryTextBox As TextBox
     Private imageLabel As Label
-    Private imagePictureBox As PictureBox ' PictureBox untuk menampilkan gambar
-    Private browseButton As Button ' Tombol untuk memilih gambar
+    Private imagePictureBox As PictureBox
+    Private browseButton As Button
     Private addButton As Button
-    Private imagePath As String ' Untuk menyimpan path gambar yang dipilih
 
-    Public Sub New()
+    Private imagePath As String
+    Private imageName As String
+    Private extName As String
+
+    Private dbClient As Koneksi
+    Private S3Client As ObjectStorage
+
+    Private NewProduct As Dashboard.Produk
+    Private dashboardForm As Dashboard
+
+    Public Sub New(DBC As Koneksi, dashboard As Dashboard)
+        dbClient = DBC
+        S3Client = New ObjectStorage
+        dashboardForm = dashboard
         InitializeComponent()
     End Sub
 
     Private Sub InitializeComponent()
-        ' Membuat Label dan TextBox untuk Nama Barang
         nameLabel = New Label()
         nameLabel.Text = "Nama Barang:"
         nameLabel.Location = New Point(20, 20)
@@ -108,8 +122,12 @@
         Dim openFileDialog As New OpenFileDialog()
         openFileDialog.Filter = "Image Files|*.jpg;*.jpeg;*.png;*.gif;*.bmp" ' Filter hanya gambar
         If openFileDialog.ShowDialog() = DialogResult.OK Then
-            ' Menampilkan gambar yang dipilih di PictureBox
+            Dim uuidnya As Guid = Guid.NewGuid()
+            Dim uuidString As String = uuidnya.ToString()
+
             imagePath = openFileDialog.FileName
+            'imageName = uuidString & Path.GetFileName(imagePath)
+            imageName = uuidString & Path.GetExtension(imagePath)
             imagePictureBox.Image = Image.FromFile(imagePath)
         End If
     End Sub
@@ -117,14 +135,17 @@
     ' Event handler untuk tombol Tambah Data
     Private Sub AddButton_Click(sender As Object, e As EventArgs)
         ' Mengambil data dari kontrol
-        Dim name As String = nameTextBox.Text
-        Dim price As String = priceTextBox.Text
-        Dim qty As String = qtyTextBox.Text
-        Dim category As String = categoryTextBox.Text
-        Dim image As String = imagePath ' Path gambar yang dipilih
+        With NewProduct
+            .nama_barang = nameTextBox.Text
+            .harga = priceTextBox.Text
+            .qty = qtyTextBox.Text
+            .kategori = categoryTextBox.Text
+            .img = imageName
+        End With
 
         ' Validasi input
-        If String.IsNullOrEmpty(name) OrElse String.IsNullOrEmpty(price) OrElse String.IsNullOrEmpty(qty) OrElse String.IsNullOrEmpty(category) OrElse String.IsNullOrEmpty(image) Then
+
+        If String.IsNullOrEmpty(NewProduct.nama_barang) OrElse String.IsNullOrEmpty(NewProduct.harga) OrElse String.IsNullOrEmpty(NewProduct.qty) OrElse String.IsNullOrEmpty(NewProduct.kategori) OrElse String.IsNullOrEmpty(NewProduct.img) Then
             MessageBox.Show("Semua field harus diisi, termasuk gambar.", "Kesalahan", MessageBoxButtons.OK, MessageBoxIcon.Error)
             Return
         End If
@@ -132,12 +153,25 @@
         ' Mengonversi harga dan jumlah menjadi integer
         Dim parsedPrice As Integer
         Dim parsedQty As Integer
-        If Not Integer.TryParse(price, parsedPrice) OrElse Not Integer.TryParse(qty, parsedQty) Then
+        If Not Integer.TryParse(NewProduct.harga, parsedPrice) OrElse Not Integer.TryParse(NewProduct.qty, parsedQty) Then
             MessageBox.Show("Harga dan Jumlah harus berupa angka.", "Kesalahan", MessageBoxButtons.OK, MessageBoxIcon.Error)
             Return
         End If
 
-        ' Simulasi penambahan data
-        MessageBox.Show($"Data berhasil ditambahkan: {name}, Harga: Rp. {parsedPrice}, Jumlah: {parsedQty}, Kategori: {category}, Gambar: {image}", "Berhasil", MessageBoxButtons.OK, MessageBoxIcon.Information)
+        Dim isAdded As Boolean = dbClient.Insert(NewProduct)
+
+        If isAdded Then
+            S3Client.UploadObject(imagePath, imageName)
+            MessageBox.Show("Barang berhasil ditambah.", "Informasi", MessageBoxButtons.OK, MessageBoxIcon.Information)
+
+            If dashboardForm IsNot Nothing Then
+                dashboardForm.ReloadData()
+            End If
+
+            Me.Close()
+
+        Else
+            MessageBox.Show("Gagal nemabah barang.", "Kesalahan", MessageBoxButtons.OK, MessageBoxIcon.Error)
+        End If
     End Sub
 End Class

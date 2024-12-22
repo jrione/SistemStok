@@ -3,11 +3,12 @@ Imports Npgsql
 
 Public Class Dashboard
     Dim dbClient As Koneksi
+    Dim ObjClient As ObjectStorage
     Dim userData As Login.UserData
     Dim TinggiPanel As Integer = 800
     Dim PanjangPanel As Integer = 600
 
-    Structure Produk
+    Public Structure Produk
         Public kode_barang As String
         Public nama_barang As String
         Public harga As Integer
@@ -16,13 +17,13 @@ Public Class Dashboard
         Public img
     End Structure
 
-    ' Panel untuk loading
     Dim loadingPanel As New Panel()
     Dim loadingLabel As New Label()
-  
+
     Public Sub New(DBC As Koneksi, LD As Login.UserData)
         dbClient = DBC
         userData = LD
+        ObjClient = New ObjectStorage()
         InitializeComponent()
 
         With Me
@@ -30,12 +31,11 @@ Public Class Dashboard
             .Text = userData.Username
             .Size = New Drawing.Size(TinggiPanel, PanjangPanel)
             .StartPosition = FormStartPosition.CenterScreen
-            .MaximizeBox = True ' Memungkinkan pengguna untuk mengubah ukuran jendela
+            .MaximizeBox = True
             .FormBorderStyle = FormBorderStyle.Sizable
             .BackColor = Color.White
         End With
 
-        ' Konfigurasi loading panel
         loadingPanel.Dock = DockStyle.Fill
         loadingPanel.BackColor = Color.White
 
@@ -50,16 +50,12 @@ Public Class Dashboard
     End Sub
 
     Private Async Sub Dashboard_Load(sender As Object, e As EventArgs) Handles MyBase.Load
-        ' Tampilkan panel loading
         loadingPanel.Visible = True
 
-        ' Muat data secara asinkron
         Dim data As List(Of Produk) = Await Task.Run(Function() dbClient.GetAllData())
 
-        ' Sembunyikan panel loading
         loadingPanel.Visible = False
 
-        ' Tampilkan data
         If data IsNot Nothing AndAlso data.Count > 0 Then
             DisplayData(data)
         Else
@@ -68,7 +64,6 @@ Public Class Dashboard
     End Sub
 
     Private Sub DisplayData(data As List(Of Produk))
-          ' Panel utama yang dapat discroll
         Dim scrollablePanel As New Panel()
         With scrollablePanel
             .Dock = DockStyle.Fill
@@ -77,31 +72,28 @@ Public Class Dashboard
         End With
         Me.Controls.Add(scrollablePanel)
 
-        ' TableLayoutPanel untuk seluruh konten
         Dim contentTable As New TableLayoutPanel()
         With contentTable
             .Dock = DockStyle.Top
             .AutoSize = True
             .RowCount = 2
             .ColumnCount = 1
-            .RowStyles.Add(New RowStyle(SizeType.AutoSize)) ' Untuk header
-            .RowStyles.Add(New RowStyle(SizeType.AutoSize)) ' Untuk data tabel
+            .RowStyles.Add(New RowStyle(SizeType.AutoSize))
+            .RowStyles.Add(New RowStyle(SizeType.AutoSize))
         End With
         scrollablePanel.Controls.Add(contentTable)
 
-        ' TableLayoutPanel untuk header
         Dim headerTable As New TableLayoutPanel()
         With headerTable
             .Dock = DockStyle.Top
             .RowCount = 1
             .ColumnCount = 2
-            .ColumnStyles.Add(New ColumnStyle(SizeType.Percent, 60)) ' Kolom untuk sambutan dan tombol
-            .ColumnStyles.Add(New ColumnStyle(SizeType.AutoSize)) ' Kolom untuk logo
+            .ColumnStyles.Add(New ColumnStyle(SizeType.Percent, 60))
+            .ColumnStyles.Add(New ColumnStyle(SizeType.AutoSize))
             .Padding = New Padding(10)
             .AutoSize = True
         End With
 
-        ' Panel untuk sambutan dan tombol
         Dim headerContentPanel As New FlowLayoutPanel()
         With headerContentPanel
             .Dock = DockStyle.Fill
@@ -109,7 +101,6 @@ Public Class Dashboard
             .AutoSize = True
         End With
 
-        ' Label sambutan
         Dim welcomeLabel As New Label()
         With welcomeLabel
             .Text = "Selamat datang di aplikasi, " & userData.Username & "!"
@@ -120,7 +111,6 @@ Public Class Dashboard
         End With
         headerContentPanel.Controls.Add(welcomeLabel)
 
-        ' Tombol tambah data baru
         Dim addButton As New Button()
         With addButton
             .Text = "Tambah Data Baru"
@@ -132,13 +122,12 @@ Public Class Dashboard
         AddHandler addButton.Click, AddressOf AddButton_Click
         headerContentPanel.Controls.Add(addButton)
 
-        ' Tambahkan headerContentPanel ke headerTable
+
         headerTable.Controls.Add(headerContentPanel, 0, 0)
 
-        ' PictureBox untuk logo
         Dim logoPictureBox As New PictureBox()
         With logoPictureBox
-            .Image = My.Resources.AppLogo ' Ganti dengan nama gambar di Resources Anda
+            .Image = My.Resources.AppLogo
             .SizeMode = PictureBoxSizeMode.Zoom
             .Width = 100
             .Height = 100
@@ -147,12 +136,8 @@ Public Class Dashboard
         End With
         headerTable.Controls.Add(logoPictureBox, 1, 0)
 
-        ' Tambahkan headerTable ke contentTable
         contentTable.Controls.Add(headerTable, 0, 0)
 
-        ' Panel untuk daftar data produk
-        
-        
         Dim flowPanel As New FlowLayoutPanel()
         With flowPanel
             .Dock = DockStyle.Top
@@ -174,7 +159,6 @@ Public Class Dashboard
                     image = Image.FromStream(ms)
                 End Using
 
-                ' Buat panel untuk setiap item
                 Dim itemPanel As New FlowLayoutPanel()
                 With itemPanel
                     .Height = 170
@@ -184,7 +168,6 @@ Public Class Dashboard
                     .BorderStyle = BorderStyle.FixedSingle
                 End With
 
-                ' Tambahkan PictureBox untuk gambar
                 Dim pictureBox As New PictureBox()
                 pictureBox.Image = image
                 pictureBox.SizeMode = PictureBoxSizeMode.StretchImage
@@ -192,7 +175,7 @@ Public Class Dashboard
                 pictureBox.Height = 160
 
                 itemPanel.Controls.Add(pictureBox)
-            
+
                 Dim tablePanel As New TableLayoutPanel()
                 With tablePanel
                     .BackColor = Color.White
@@ -208,17 +191,14 @@ Public Class Dashboard
                     Next
                 End With
 
-                ' Tambahkan label ke TableLayoutPanel
                 AddLabelToTable(tablePanel, "Kode", dt.kode_barang, 0)
                 AddLabelToTable(tablePanel, "Nama", dt.nama_barang, 1)
                 AddLabelToTable(tablePanel, "Kategori", dt.kategori.ToString(), 2)
                 AddLabelToTable(tablePanel, "Harga", "Rp. " & dt.harga.ToString("N0"), 3)
                 AddLabelToTable(tablePanel, "Jumlah", dt.qty.ToString(), 4)
 
-                ' Tambahkan TableLayoutPanel ke itemPanel
                 itemPanel.Controls.Add(tablePanel)
 
-                ' Button Panel
                 Dim btnPanel As New FlowLayoutPanel()
                 With btnPanel
                     .FlowDirection = FlowDirection.TopDown
@@ -244,7 +224,6 @@ Public Class Dashboard
 
                 itemPanel.Controls.Add(btnPanel)
 
-                ' Tambahkan itemPanel ke flowPanel
                 flowPanel.Controls.Add(itemPanel)
             Next
         Else
@@ -258,14 +237,12 @@ Public Class Dashboard
             End With
             flowPanel.Controls.Add(noDataLabel)
         End If
-
-        ' Tambahkan flowPanel ke contentTable
         contentTable.Controls.Add(flowPanel, 0, 1)
     End Sub
 
     Private Sub AddButton_Click(sender As Object, e As EventArgs)
-        Dim addForm As New AddDataForm()
-        addForm.ShowDialog() ' Menampilkan form sebagai dialog
+        Dim addForm As New AddDataForm(dbClient, Me)
+        addForm.ShowDialog()
     End Sub
 
     Private Sub AddLabelToTable(tablePanel As TableLayoutPanel, key As String, value As String, row As Integer)
@@ -287,24 +264,17 @@ Public Class Dashboard
     End Sub
 
     Private Sub BtnDelete_Click(sender As Object, e As EventArgs)
-        ' Ambil tombol yang diklik
         Dim button As Button = CType(sender, Button)
-
-        ' Ambil kode_barang dari Tag tombol
         Dim kodeBarang As String = button.Tag.ToString()
-
-        ' Konfirmasi penghapusan
         Dim result = MessageBox.Show("Apakah Anda yakin ingin menghapus barang dengan kode: " & kodeBarang & "?",
                                      "Konfirmasi Hapus",
                                      MessageBoxButtons.YesNo,
                                      MessageBoxIcon.Question)
 
         If result = DialogResult.Yes Then
-            ' Logika penghapusan dari database
-            Dim isDeleted As Boolean = dbClient.Delete(kodeBarang) ' Implementasikan logika Delete di Koneksi
+            Dim isDeleted As Boolean = dbClient.Delete(kodeBarang)
             If isDeleted Then
                 MessageBox.Show("Barang berhasil dihapus.", "Informasi", MessageBoxButtons.OK, MessageBoxIcon.Information)
-                ' Muat ulang data untuk memperbarui tampilan
                 Me.Controls.Clear()
                 Dashboard_Load(Nothing, Nothing)
             Else
@@ -313,16 +283,16 @@ Public Class Dashboard
         End If
     End Sub
 
+    Public Sub ReloadData()
+        Me.Controls.Clear()
+        Dashboard_Load(Nothing, Nothing)
+    End Sub
+
     Private Sub BtnEdit_Click(sender As Object, e As EventArgs)
-        ' Ambil tombol yang diklik
         Dim button As Button = CType(sender, Button)
-
-        ' Ambil kode_barang dari Tag tombol
         Dim kodeBarang As String = button.Tag.ToString()
-
-        ' Buat instance dari form EditData
-        Dim editForm As New EditDataForm(kodeBarang, dbClient) ' Kirim kode_barang ke form edit
-        editForm.ShowDialog() ' Tampilkan form edit sebagai dialog
+        Dim editForm As New EditDataForm(kodeBarang, dbClient, Me)
+        editForm.ShowDialog()
 
     End Sub
 End Class

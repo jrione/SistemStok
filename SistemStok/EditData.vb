@@ -7,7 +7,6 @@ Public Class EditDataForm
     Private kodeBarang As String
     Private dbClient As Koneksi
 
-    ' Deklarasi kontrol
     Private nameLabel As Label
     Private nameTextBox As TextBox
     Private priceLabel As Label
@@ -17,15 +16,19 @@ Public Class EditDataForm
     Private categoryLabel As Label
     Private categoryTextBox As TextBox
     Private imageLabel As Label
-    Private imagePictureBox As PictureBox ' PictureBox untuk menampilkan gambar
-    Private browseButton As Button ' Tombol untuk memilih gambar
-    Private addButton As Button
-    Private imagePath As String ' Untuk menyimpan path gambar yang dipilih
+    Private imagePictureBox As PictureBox
+    Private browseButton As Button
+    Private editButton As Button
+    Private imagePath As String
     Private loadingLabel As Label
 
-    Public Sub New(kode As String, dbc As Koneksi)
+    Private EditProduct As Dashboard.Produk
+    Private dashboardForm As Dashboard
+
+    Public Sub New(kode As String, dbc As Koneksi, dashboard As Dashboard)
         kodeBarang = kode
         dbClient = dbc
+        dashboardForm = dashboard
         InitializeComponent()
     End Sub
 
@@ -36,7 +39,6 @@ Public Class EditDataForm
         loadingLabel.AutoSize = True
         loadingLabel.Visible = False
 
-        ' Membuat Label dan TextBox untuk Nama Barang
         nameLabel = New Label()
         nameLabel.Text = "Nama Barang:"
         nameLabel.Location = New Point(20, 20)
@@ -45,7 +47,6 @@ Public Class EditDataForm
         nameTextBox.Location = New Point(120, 20)
         nameTextBox.Width = 200
 
-        ' Membuat Label dan TextBox untuk Harga
         priceLabel = New Label()
         priceLabel.Text = "Harga:"
         priceLabel.Location = New Point(20, 60)
@@ -54,7 +55,6 @@ Public Class EditDataForm
         priceTextBox.Location = New Point(120, 60)
         priceTextBox.Width = 200
 
-        ' Membuat Label dan TextBox untuk Jumlah
         qtyLabel = New Label()
         qtyLabel.Text = "Jumlah:"
         qtyLabel.Location = New Point(20, 100)
@@ -63,7 +63,6 @@ Public Class EditDataForm
         qtyTextBox.Location = New Point(120, 100)
         qtyTextBox.Width = 200
 
-        ' Membuat Label dan TextBox untuk Kategori
         categoryLabel = New Label()
         categoryLabel.Text = "Kategori:"
         categoryLabel.Location = New Point(20, 140)
@@ -72,32 +71,12 @@ Public Class EditDataForm
         categoryTextBox.Location = New Point(120, 140)
         categoryTextBox.Width = 200
 
-        ' Membuat Label dan PictureBox untuk Gambar
-        imageLabel = New Label()
-        imageLabel.Text = "Pilih Gambar:"
-        imageLabel.Location = New Point(20, 180)
+        editButton = New Button()
+        editButton.Text = "Tambah Data"
+        editButton.Location = New Point(120, 300)
+        editButton.Width = 200
+        AddHandler editButton.Click, AddressOf EditButton_Click
 
-        imagePictureBox = New PictureBox()
-        imagePictureBox.Location = New Point(120, 180)
-        imagePictureBox.Size = New Size(100, 100)
-        imagePictureBox.BorderStyle = BorderStyle.FixedSingle
-        imagePictureBox.SizeMode = PictureBoxSizeMode.Zoom
-
-        ' Tombol untuk memilih gambar
-        'browseButton = New Button()
-        'browseButton.Text = "Browse"
-        'browseButton.Location = New Point(230, 200)
-        'browseButton.Width = 90
-        'AddHandler browseButton.Click, AddressOf BrowseButton_Click
-
-        ' Membuat Tombol untuk Menambah Data
-        'addButton = New Button()
-        'addButton.Text = "Tambah Data"
-        'addButton.Location = New Point(120, 300)
-        'addButton.Width = 200
-        'AddHandler addButton.Click, AddressOf AddButton_Click
-
-        ' Menambahkan kontrol ke form
         Me.Controls.Add(nameLabel)
         Me.Controls.Add(nameTextBox)
         Me.Controls.Add(priceLabel)
@@ -106,41 +85,60 @@ Public Class EditDataForm
         Me.Controls.Add(qtyTextBox)
         Me.Controls.Add(categoryLabel)
         Me.Controls.Add(categoryTextBox)
-        Me.Controls.Add(imageLabel)
-        Me.Controls.Add(imagePictureBox)
-        'Me.Controls.Add(browseButton)
-        'Me.Controls.Add(addButton)
+        Me.Controls.Add(editButton)
 
-        ' Pengaturan Form
-        Me.Text = "Form Tambah Data"
+        Me.Text = "Form Edit Data"
         Me.Size = New Size(400, 400)
         Me.StartPosition = FormStartPosition.CenterScreen
     End Sub
 
     Private Async Sub EditDataForm_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         Try
-            ' Tampilkan label "Mohon tunggu..."
             loadingLabel.Visible = True
-
-            ' Ambil data produk secara asinkron
             Dim data As Produk = Await Task.Run(Function() dbClient.GetDataByKodeBarang(kodeBarang))
 
-            ' Periksa apakah data tidak null
-            'If data IsNot Nothing Then
-            ' Isi kontrol dengan data produk
             nameTextBox.Text = data.nama_barang
             priceTextBox.Text = data.harga.ToString()
             qtyTextBox.Text = data.qty.ToString()
             categoryTextBox.Text = data.kategori
-            'Else
-            '    MessageBox.Show("Data tidak ditemukan.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
-            'End If
         Catch ex As Exception
             MessageBox.Show("Terjadi kesalahan: " & ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
         Finally
-            ' Sembunyikan label "Mohon tunggu..."
             loadingLabel.Visible = False
         End Try
+    End Sub
+
+    Private Sub EditButton_Click(sender As Object, e As EventArgs)
+        With EditProduct
+            .nama_barang = nameTextBox.Text
+            .harga = priceTextBox.Text
+            .qty = qtyTextBox.Text
+            .kategori = categoryTextBox.Text
+        End With
+
+        If String.IsNullOrEmpty(EditProduct.nama_barang) OrElse String.IsNullOrEmpty(EditProduct.harga) OrElse String.IsNullOrEmpty(EditProduct.qty) OrElse String.IsNullOrEmpty(EditProduct.kategori) Then
+            MessageBox.Show("Semua field harus diisi, termasuk gambar.", "Kesalahan", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            Return
+        End If
+
+        Dim parsedPrice As Integer
+        Dim parsedQty As Integer
+        If Not Integer.TryParse(EditProduct.harga, parsedPrice) OrElse Not Integer.TryParse(EditProduct.qty, parsedQty) Then
+            MessageBox.Show("Harga dan Jumlah harus berupa angka.", "Kesalahan", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            Return
+        End If
+
+        Dim isEdited As Boolean = dbClient.UpdateProduct(EditProduct, kodeBarang)
+
+        If isEdited Then
+            MessageBox.Show("Barang berhasil diedit.", "Informasi", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            If dashboardForm IsNot Nothing Then
+                dashboardForm.ReloadData()
+            End If
+            Me.Close()
+        Else
+            MessageBox.Show("Gagal nemabah barang.", "Kesalahan", MessageBoxButtons.OK, MessageBoxIcon.Error)
+        End If
     End Sub
 
 End Class

@@ -56,13 +56,12 @@ Public Class Koneksi
                 result.Add(produk)
             End While
 
-            ' Optionally, you can return the result as a string
             Return result
         Catch ex As Exception
             MsgBox(ex.Message)
             Return New List(Of Dashboard.Produk)()
         Finally
-            conn.Close() ' Ensure the connection is closed
+            conn.Close()
         End Try
     End Function
 
@@ -70,22 +69,40 @@ Public Class Koneksi
         Dim query As String = "DELETE FROM barang WHERE kodebarang = @kode"
         Dim conn As NpgsqlConnection = Connect()
         Dim cmd As New NpgsqlCommand(query, conn)
-
-        ' Tambahkan parameter untuk kode_barang
         cmd.Parameters.AddWithValue("@kode", kodeBarang)
 
         Try
-            ' Eksekusi perintah DELETE
             Dim rowsAffected As Integer = cmd.ExecuteNonQuery()
-
-            ' Jika baris terpengaruh lebih dari 0, data berhasil dihapus
             Return rowsAffected > 0
         Catch ex As Exception
-            ' Tampilkan pesan error jika terjadi kesalahan
             MsgBox("Error: " & ex.Message)
             Return False
         Finally
-            ' Pastikan koneksi selalu ditutup
+            conn.Close()
+        End Try
+    End Function
+
+    Public Function Insert(data As Dashboard.Produk) As Boolean
+        Dim query As String = "INSERT INTO barang (namabarang, kategori, harga, jumlah, img_asset) VALUES (@nama, @kategori, @harga, @jumlah, @img)"
+        Dim conn As NpgsqlConnection = Connect()
+        Dim cmd As New NpgsqlCommand(query, conn)
+        cmd.Parameters.AddWithValue("@nama", data.nama_barang)
+        cmd.Parameters.AddWithValue("@kategori", data.kategori)
+        cmd.Parameters.AddWithValue("@harga", data.harga)
+        cmd.Parameters.AddWithValue("@jumlah", data.qty)
+        cmd.Parameters.AddWithValue("@img", data.img)
+
+        Try
+            Dim rowsAffected As Integer = cmd.ExecuteNonQuery()
+            If (rowsAffected > 0) Then
+                Return True
+            Else
+                Return False
+            End If
+        Catch ex As Exception
+            MsgBox("Error: " & ex.Message)
+            Return False
+        Finally
             conn.Close()
         End Try
     End Function
@@ -94,12 +111,9 @@ Public Class Koneksi
         Dim query As String = "SELECT * FROM barang WHERE kodebarang = @kode"
         Dim conn As NpgsqlConnection = Connect()
         Dim cmd As New NpgsqlCommand(query, conn)
-
-        ' Mengikat parameter
-        cmd.Parameters.AddWithValue("@kode", kodeBarang)
-
         Dim produk As New Dashboard.Produk()
 
+        cmd.Parameters.AddWithValue("@kode", kodeBarang)
         Try
             Dim reader As NpgsqlDataReader = cmd.ExecuteReader()
 
@@ -107,18 +121,42 @@ Public Class Koneksi
                 produk.kode_barang = reader("kodebarang").ToString()
                 produk.nama_barang = reader("namabarang").ToString()
                 produk.kategori = reader("kategori").ToString()
-                produk.harga = Convert.ToInt32(reader("harga")) ' Pastikan konversi tipe data sesuai
-                produk.qty = Convert.ToInt32(reader("jumlah")) ' Pastikan konversi tipe data sesuai
-                ' Jika ada kolom img_asset, pastikan Anda menambahkannya di struktur Produk
-                produk.img = reader("img_asset").ToString() ' Pastikan kolom ini ada
+                produk.harga = Convert.ToInt32(reader("harga"))
+                produk.qty = Convert.ToInt32(reader("jumlah"))
+                produk.img = reader("img_asset").ToString()
             End If
 
             Return produk
         Catch ex As Exception
             MsgBox(ex.Message)
-            Return Nothing ' Kembalikan Nothing jika terjadi kesalahan
+            Return Nothing
         Finally
-            conn.Close() ' Pastikan koneksi ditutup
+            conn.Close()
+        End Try
+    End Function
+
+    Public Function UpdateProduct(EditProduct As Dashboard.Produk, kodeBarang As String) As Boolean
+        Dim query As String = "UPDATE barang SET namabarang = @nama, kategori = @kategori, harga = @harga, jumlah = @jumlah WHERE kodebarang = @kode"
+        Dim conn As NpgsqlConnection = Connect()
+        Dim cmd As New NpgsqlCommand(query, conn)
+
+        cmd.Parameters.AddWithValue("@nama", EditProduct.nama_barang)
+        cmd.Parameters.AddWithValue("@kategori", EditProduct.kategori)
+        cmd.Parameters.AddWithValue("@harga", EditProduct.harga)
+        cmd.Parameters.AddWithValue("@jumlah", EditProduct.qty)
+        cmd.Parameters.AddWithValue("@kode", kodeBarang)
+        Try
+            Dim rowsAffected As Integer = cmd.ExecuteNonQuery()
+            If (rowsAffected > 0) Then
+                Return True
+            Else
+                Return False
+            End If
+        Catch ex As Exception
+            MsgBox("Error: " & ex.Message)
+            Return False
+        Finally
+            conn.Close()
         End Try
     End Function
 
