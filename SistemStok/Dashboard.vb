@@ -28,7 +28,7 @@ Public Class Dashboard
 
         With Me
             .AutoSize = False
-            .Text = userData.Username
+            .Text = "Dashboard - Aplikasi Manajemen Stok Digital"
             .Size = New Drawing.Size(TinggiPanel, PanjangPanel)
             .StartPosition = FormStartPosition.CenterScreen
             .MaximizeBox = True

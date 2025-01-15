@@ -72,7 +72,7 @@ Public Class EditDataForm
         categoryTextBox.Width = 200
 
         editButton = New Button()
-        editButton.Text = "Tambah Data"
+        editButton.Text = "Edit Barang"
         editButton.Location = New Point(120, 300)
         editButton.Width = 200
         AddHandler editButton.Click, AddressOf EditButton_Click

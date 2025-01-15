@@ -1,6 +1,4 @@
-﻿Imports BCrypt.Net
-Imports Npgsql
-Public Class Login
+﻿Public Class Login
     Dim dbClient = New Koneksi
     Public Structure UserData
         Public Username As String
@@ -10,7 +8,7 @@ Public Class Login
         dbClient.Connect()
         Me.MaximizeBox = False
         Me.FormBorderStyle = FormBorderStyle.FixedDialog
-        Me.Text = "Login Aplikasi Manajemen Stok Digital"
+        Me.Text = "Login - Aplikasi Manajemen Stok Digital"
         Me.Size = New Drawing.Size(500, 300)
         Me.StartPosition = FormStartPosition.CenterScreen
 
