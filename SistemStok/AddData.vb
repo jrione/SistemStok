@@ -158,10 +158,23 @@ Public Class AddDataForm
             Return
         End If
 
-        Dim isAdded As Boolean = dbClient.Insert(NewProduct)
+
+        Dim checkUploadImage As Boolean = True
+        Dim isAdded As Boolean = False
+        Try
+            S3Client.UploadObject(imagePath, imageName)
+        Catch ex As Exception
+            checkUploadImage = False
+        End Try
+
+        If Not checkUploadImage Then
+            MessageBox.Show("Gagal mengunggah gambar.", "Kesalahan", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            Return
+        Else
+            isAdded = dbClient.Insert(NewProduct)
+        End If
 
         If isAdded Then
-            S3Client.UploadObject(imagePath, imageName)
             MessageBox.Show("Barang berhasil ditambah.", "Informasi", MessageBoxButtons.OK, MessageBoxIcon.Information)
 
             If dashboardForm IsNot Nothing Then
