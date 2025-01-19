@@ -1,5 +1,6 @@
 ﻿Imports System.Text
 Imports Npgsql
+Imports Sprache
 Public Class Koneksi
     Public Function Connect() As NpgsqlConnection
         Dim connString As String = Environment.GetEnvironmentVariable("CONNSTRING")
@@ -284,8 +285,32 @@ Public Class Koneksi
     End Function
 
     Public Function GetAllTransactions() As List(Of CashierSystem.Transaksi)
-        Dim transactions As New List(Of CashierSystem.Transaksi)
-        ' Implementasikan query database untuk mendapatkan data transaksi.
+        Dim transactions As New List(Of CashierSystem.Transaksi)()
+
+        Dim query As String = "SELECT td.id_transaksi,td.kodebarang,b.namabarang,td.jumlah,td.total_harga,td.created_at FROM transaksi_detail as td JOIN barang as b ON td.kodebarang=b.kodebarang"
+        Dim conn As NpgsqlConnection = Connect()
+        Dim cmd As New NpgsqlCommand(query, conn)
+
+
+        Try
+            Dim reader As NpgsqlDataReader = cmd.ExecuteReader()
+            While reader.Read()
+                Dim trx As New CashierSystem.Transaksi() With {
+                    .IDTransaksi = reader("id_transaksi").ToString(),
+                    .NamaBarang = reader("namabarang").ToString(),
+                    .JumlahBarang = reader("jumlah").ToString(),
+                    .TotalHarga = reader("total_harga"),
+                    .TanggalTransaksi = reader("created_at")
+                }
+                transactions.Add(trx)
+            End While
+        Catch ex As Exception
+            MsgBox(ex.Message)
+            Return New List(Of CashierSystem.Transaksi)()
+        Finally
+            conn.Close()
+        End Try
+
         Return transactions
     End Function
 

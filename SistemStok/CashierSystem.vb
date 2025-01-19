@@ -9,7 +9,7 @@ Public Class CashierSystem
         Public Property NamaBarang As String
         Public Property JumlahBarang As Integer
         Public Property TotalHarga As Decimal
-        Public Property TanggalTransaksi As DateTime
+        Public Property TanggalTransaksi As String
     End Structure
 
     Dim dbClient As Koneksi
@@ -28,14 +28,28 @@ Public Class CashierSystem
         Me.Size = New Drawing.Size(800, 600)
         Me.StartPosition = FormStartPosition.CenterScreen
 
-        ' Panel untuk tombol
-        Dim buttonPanel As New Panel With {
-            .Dock = DockStyle.Top, ' Panel ini akan berada di atas
-            .Height = 50, ' Menentukan tinggi panel tombol
-            .Padding = New Padding(10) ' Menambahkan padding di sekitar tombol
-        }
+        Dim scrollablePanel As New Panel()
+        With scrollablePanel
+            .Dock = DockStyle.Fill
+            .AutoScroll = True
+            .BackColor = Color.White
+        End With
+        Me.Controls.Add(scrollablePanel)
 
-        ' Tombol Tambah Transaksi
+        Dim headerContentPanel As New FlowLayoutPanel()
+        With headerContentPanel
+            .Dock = DockStyle.Fill
+            .FlowDirection = FlowDirection.TopDown
+            .AutoSize = True
+        End With
+
+        Dim buttonPanel As New FlowLayoutPanel()
+        With buttonPanel
+            .FlowDirection = FlowDirection.LeftToRight
+            .AutoSize = True
+            .Margin = New Padding(0)
+        End With
+
         Dim addButton As New Button()
         With addButton
             .Text = "Tambah Transaksi"
@@ -46,7 +60,6 @@ Public Class CashierSystem
         End With
         AddHandler addButton.Click, AddressOf AddButton_Click
 
-        ' Tombol Dashboard
         Dim dashboardButton As New Button()
         With dashboardButton
             .Text = "Dashboard"
@@ -57,29 +70,29 @@ Public Class CashierSystem
         End With
         AddHandler dashboardButton.Click, AddressOf DashboardButton_Click
 
-        ' Menambahkan tombol ke panel
         buttonPanel.Controls.Add(addButton)
         buttonPanel.Controls.Add(dashboardButton)
+        headerContentPanel.Controls.Add(buttonPanel)
 
-        ' Menambahkan panel ke form
-        Me.Controls.Add(buttonPanel)
 
-        ' DataGridView untuk menampilkan transaksi
         dataGridView = New DataGridView With {
             .Dock = DockStyle.Fill, ' Mengisi seluruh form
             .AutoGenerateColumns = False,
+            .RowHeadersVisible = False,
             .ReadOnly = True,
             .SelectionMode = DataGridViewSelectionMode.FullRowSelect,
+            .AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells,
             .AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
-            .Font = New Font("Arial", 10, FontStyle.Regular), ' Mengatur jenis dan ukuran font
-            .BorderStyle = BorderStyle.Fixed3D, ' Mengatur jenis border
-            .GridColor = Color.Gray, ' Mengatur warna grid
+            .Font = New Font("Arial", 10, FontStyle.Regular),
+            .Height = Height - 100,
+            .BorderStyle = BorderStyle.Fixed3D,
+            .GridColor = Color.White,
             .DefaultCellStyle = New DataGridViewCellStyle With {
                 .BackColor = Color.White,
                 .ForeColor = Color.Black,
                 .SelectionBackColor = Color.LightBlue,
                 .SelectionForeColor = Color.Black,
-                .Font = New Font("Arial", 10, FontStyle.Regular) ' Font untuk sel
+                .Font = New Font("Arial", 10, FontStyle.Regular)
             },
             .ColumnHeadersDefaultCellStyle = New DataGridViewCellStyle With {
                 .BackColor = Color.Navy,
@@ -88,28 +101,35 @@ Public Class CashierSystem
             }
         }
 
-        ' Menambahkan kolom ke DataGridView
-        dataGridView.Columns.Add(New DataGridViewTextBoxColumn With {.Name = "IDTransaksi", .HeaderText = "ID Transaksi", .DataPropertyName = "IDTransaksi", .FillWeight = 20})
-        dataGridView.Columns.Add(New DataGridViewTextBoxColumn With {.Name = "NamaBarang", .HeaderText = "Nama Barang", .DataPropertyName = "NamaBarang", .FillWeight = 40})
-        dataGridView.Columns.Add(New DataGridViewTextBoxColumn With {.Name = "JumlahBarang", .HeaderText = "Jumlah Barang", .DataPropertyName = "JumlahBarang", .FillWeight = 20})
-        dataGridView.Columns.Add(New DataGridViewTextBoxColumn With {.Name = "TotalHarga", .HeaderText = "Total Harga", .DataPropertyName = "TotalHarga", .DefaultCellStyle = New DataGridViewCellStyle With {.Format = "C"}, .FillWeight = 20})
-        dataGridView.Columns.Add(New DataGridViewTextBoxColumn With {.Name = "TanggalTransaksi", .HeaderText = "Tanggal Transaksi", .DataPropertyName = "TanggalTransaksi", .FillWeight = 20})
+        dataGridView.Columns.Add(New DataGridViewTextBoxColumn With {.Name = "IDTransaksi", .HeaderText = "ID Transaksi", .DataPropertyName = "IDTransaksi", .FillWeight = 10})
+        dataGridView.Columns.Add(New DataGridViewTextBoxColumn With {.Name = "NamaBarang", .HeaderText = "Nama Barang", .DataPropertyName = "NamaBarang", .FillWeight = 25})
+        dataGridView.Columns.Add(New DataGridViewTextBoxColumn With {.Name = "JumlahBarang", .HeaderText = "Jumlah Barang", .DataPropertyName = "JumlahBarang", .FillWeight = 15})
+        dataGridView.Columns.Add(New DataGridViewTextBoxColumn With {.Name = "TotalHarga", .HeaderText = "Total Harga", .DataPropertyName = "TotalHarga", .DefaultCellStyle = New DataGridViewCellStyle With {.Format = "Rp #,###", .Alignment = DataGridViewContentAlignment.MiddleRight}, .FillWeight = 25})
+        dataGridView.Columns.Add(New DataGridViewTextBoxColumn With {.Name = "TanggalTransaksi", .HeaderText = "Tanggal Transaksi", .DataPropertyName = "TanggalTransaksi", .FillWeight = 25})
 
-        ' Panel untuk menampung DataGridView
         Dim containerPanel As New Panel With {
             .Dock = DockStyle.Fill,
-            .Padding = New Padding(10) ' Menambahkan padding di semua sisi
+            .Padding = New Padding(10)
         }
-
-        ' Menambahkan DataGridView ke panel
         containerPanel.Controls.Add(dataGridView)
 
-        ' Menambahkan panel ke form
-        Me.Controls.Add(containerPanel)
+
+        Dim contentTable As New TableLayoutPanel()
+        With contentTable
+            .Dock = DockStyle.Fill
+            .AutoSize = True
+            .RowCount = 2
+            .ColumnCount = 1
+            .RowStyles.Add(New RowStyle(SizeType.AutoSize))
+            .RowStyles.Add(New RowStyle(SizeType.AutoSize))
+        End With
+        scrollablePanel.Controls.Add(contentTable)
+
+        contentTable.Controls.Add(headerContentPanel)
+        contentTable.Controls.Add(containerPanel)
     End Sub
 
     Private Async Sub CashierSystem_Click(sender As Object, e As EventArgs) Handles MyBase.Load
-        ' Mengambil data transaksi dan menampilkannya ke DataGridView
         Dim data = Await Task.Run(Function() dbClient.GetAllTransactions())
         If data IsNot Nothing Then
             Dim bindingList = New BindingSource(data, Nothing)
@@ -120,14 +140,10 @@ Public Class CashierSystem
     End Sub
 
     Private Sub DashboardButton_Click(sender As Object, e As EventArgs)
-        ' Membuka form Dashboard
         Dim dashboardForm As New Dashboard(dbClient, userData)
         dashboardForm.ShowDialog()
     End Sub
-
-    ' Event untuk tombol Add Transaksi
     Private Sub AddButton_Click(sender As Object, e As EventArgs)
-        ' Membuka form untuk menambahkan transaksi, bukan Dashboard
         Dim dashboardForm As New Dashboard(dbClient, userData)
         dashboardForm.ShowDialog()
     End Sub

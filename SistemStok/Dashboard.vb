@@ -282,9 +282,7 @@ Public Class Dashboard
     End Sub
 
     Private Sub CashierSystem_Click(sender As Object, e As EventArgs)
-        'Dim cashierForm As New CashierSystem()
-        'cashierForm.ShowDialog()
-        Dim cashierForm As New CashierAdd(dbClient, Me)
+        Dim cashierForm As New CashierSystem(dbClient, userData)
         cashierForm.ShowDialog()
     End Sub
 
