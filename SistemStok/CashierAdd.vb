@@ -2,8 +2,8 @@
 Imports SistemStok.Dashboard
 
 Public Class CashierAdd
+    Private dashboardForm As Dashboard
 
-    ' Struktur untuk menyimpan produk yang ditambahkan
     Public Structure AddProduct
         Public kode_barang As String
         Public product As String
@@ -23,8 +23,9 @@ Public Class CashierAdd
     Private finishButton As New Button()
     Private productsListBox As New ListBox() ' ListBox untuk menampilkan daftar produk
 
-    Public Sub New(DBC As Koneksi)
+    Public Sub New(DBC As Koneksi, dashboard As Dashboard)
         dbClient = DBC
+        dashboardForm = dashboard
         Me.Text = "Tambah Data"
         Me.Size = New Size(800, 600)
         Me.StartPosition = FormStartPosition.CenterScreen
@@ -131,7 +132,8 @@ Public Class CashierAdd
         Dim id_transaksi As Integer = dbClient.GenerateTransactionId() ' Ganti dengan metode untuk menghasilkan ID transaksi
 
         If dbClient.AddTransaction(id_transaksi, productsList) Then
-            MessageBox.Show("Transaksi berhasil disimpan.")
+            Me.Close()
+            dashboardForm.ReloadData()
         Else
             MessageBox.Show("Terjadi kesalahan saat menyimpan transaksi.")
         End If

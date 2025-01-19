@@ -219,6 +219,15 @@ Public Class Koneksi
                     cmd.Parameters.AddWithValue("@total_harga", total_harga)
 
                     cmd.ExecuteNonQuery()
+
+                    ' Mengurangi qty di tabel barang
+                    Dim updateBarangQuery As String = "UPDATE barang SET jumlah = jumlah - @jumlah WHERE kodebarang = @kodebarang"
+                    Using updateCmd As New NpgsqlCommand(updateBarangQuery, conn)
+                        updateCmd.Transaction = transaction
+                        updateCmd.Parameters.AddWithValue("@jumlah", product.qty)
+                        updateCmd.Parameters.AddWithValue("@kodebarang", product.kode_barang)
+                        updateCmd.ExecuteNonQuery()
+                    End Using
                 Next
             End Using
 
