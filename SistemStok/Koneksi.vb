@@ -160,4 +160,118 @@ Public Class Koneksi
         End Try
     End Function
 
+    Public Function GetAllBarang()
+        Dim query As String = "SELECT * FROM barang WHERE jumlah > 0"
+        Dim conn As NpgsqlConnection = Connect()
+        Dim cmd As New NpgsqlCommand(query, conn)
+
+        Dim result As New List(Of Dashboard.Produk)()
+
+        Try
+            Dim reader As NpgsqlDataReader = cmd.ExecuteReader()
+
+            While reader.Read()
+                Dim produk As New Dashboard.Produk() With {
+                    .kode_barang = reader("kodebarang").ToString(),
+                    .nama_barang = reader("namabarang").ToString(),
+                    .kategori = reader("kategori").ToString(),
+                    .harga = reader("harga"),
+                    .qty = reader("jumlah"),
+                    .img = reader("img_asset")
+                }
+                result.Add(produk)
+            End While
+
+            Return result
+        Catch ex As Exception
+            MsgBox(ex.Message)
+            Return New List(Of Dashboard.Produk)()
+        Finally
+            conn.Close()
+        End Try
+    End Function
+
+    Public Function AddTransaction(id_transaksi As Integer, products As List(Of CashierAdd.AddProduct)) As Boolean
+        Dim conn As NpgsqlConnection = Connect()
+        Dim transaction As NpgsqlTransaction = conn.BeginTransaction()
+
+        Try
+            ' Menyimpan data ke tabel transaksi
+            Dim insertTransaksiQuery As String = "INSERT INTO transaksi (id_transaksi) VALUES (@id_transaksi)"
+            Using cmd As New NpgsqlCommand(insertTransaksiQuery, conn)
+                cmd.Transaction = transaction
+                cmd.Parameters.AddWithValue("@id_transaksi", id_transaksi)
+                cmd.ExecuteNonQuery()
+            End Using
+
+            ' Menyimpan data ke tabel transaksi_detail
+            Dim insertDetailQuery As String = "INSERT INTO transaksi_detail (id_transaksi, kodebarang, jumlah, total_harga) VALUES (@id_transaksi, @kodebarang, @jumlah, @total_harga)"
+            Using cmd As New NpgsqlCommand(insertDetailQuery, conn)
+                cmd.Transaction = transaction
+
+                For Each product As CashierAdd.AddProduct In products
+                    Dim total_harga As Integer = product.qty * GetProductPrice(product.kode_barang) ' Menghitung total harga
+
+                    cmd.Parameters.Clear() ' Menghapus parameter sebelumnya
+                    cmd.Parameters.AddWithValue("@id_transaksi", id_transaksi)
+                    cmd.Parameters.AddWithValue("@kodebarang", product.kode_barang)
+                    cmd.Parameters.AddWithValue("@jumlah", product.qty)
+                    cmd.Parameters.AddWithValue("@total_harga", total_harga)
+
+                    cmd.ExecuteNonQuery()
+                Next
+            End Using
+
+            transaction.Commit() ' Commit transaksi jika semua berhasil
+            Return True
+        Catch ex As Exception
+            transaction.Rollback() ' Rollback jika terjadi kesalahan
+            MsgBox(ex.Message)
+            Return False
+        Finally
+            conn.Close()
+        End Try
+    End Function
+
+    Private Function GetProductPrice(kode_barang As String) As Integer
+        Dim query As String = "SELECT harga FROM barang WHERE kodebarang = @kodebarang"
+        Dim conn As NpgsqlConnection = Connect()
+        Dim cmd As New NpgsqlCommand(query, conn)
+        cmd.Parameters.AddWithValue("@kodebarang", kode_barang)
+
+        Try
+            Dim result As Object = cmd.ExecuteScalar()
+            If result IsNot Nothing Then
+                Return Convert.ToInt32(result)
+            Else
+                Return 0
+            End If
+        Catch ex As Exception
+            MsgBox(ex.Message)
+            Return 0
+        Finally
+            conn.Close()
+        End Try
+    End Function
+
+    Public Function GenerateTransactionId() As Integer
+        Dim conn As NpgsqlConnection = Connect()
+        Dim query As String = "SELECT COALESCE(MAX(id_transaksi), 0) + 1 FROM transaksi"
+        Dim cmd As New NpgsqlCommand(query, conn)
+
+        Try
+            Dim result As Object = cmd.ExecuteScalar()
+            If result IsNot Nothing Then
+                Return Convert.ToInt32(result)
+            Else
+                Return 1 ' Jika tidak ada transaksi, mulai dari 1
+            End If
+        Catch ex As Exception
+            MsgBox("Terjadi kesalahan saat mengambil ID transaksi: " & ex.Message)
+            Return 1 ' Kembali ke 1 jika terjadi kesalahan
+        Finally
+            conn.Close()
+        End Try
+    End Function
+
 End Class

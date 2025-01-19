@@ -333,6 +333,12 @@
     <Compile Include="EditData.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="CashierAdd.Designer.vb">
+      <DependentUpon>CashierAdd.vb</DependentUpon>
+    </Compile>
+    <Compile Include="CashierAdd.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Koneksi.vb" />
     <Compile Include="Dashboard.vb">
       <SubType>Form</SubType>
@@ -366,6 +372,12 @@
     <Compile Include="ObjectStorage.vb" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="CashierAdd.resx">
+      <DependentUpon>CashierAdd.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CashierSystem.resx">
+      <DependentUpon>CashierSystem.vb</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Dashboard.resx">
       <DependentUpon>Dashboard.vb</DependentUpon>
     </EmbeddedResource>
