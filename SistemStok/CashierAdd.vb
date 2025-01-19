@@ -1,8 +1,6 @@
 ﻿Imports System.Xml
-Imports SistemStok.Dashboard
 
 Public Class CashierAdd
-    Private dashboardForm As Dashboard
 
     Public Structure AddProduct
         Public kode_barang As String
@@ -11,6 +9,7 @@ Public Class CashierAdd
     End Structure
 
     Dim dbClient As Koneksi
+    Dim userData As Login.UserData
     Private productsList As New List(Of AddProduct)()
 
     Private productLabel As New Label()
@@ -23,9 +22,9 @@ Public Class CashierAdd
     Private finishButton As New Button()
     Private productsListBox As New ListBox() ' ListBox untuk menampilkan daftar produk
 
-    Public Sub New(DBC As Koneksi, dashboard As Dashboard)
+    Public Sub New(DBC As Koneksi, LD As Login.UserData)
         dbClient = DBC
-        dashboardForm = dashboard
+        userData = LD
         Me.Text = "Tambah Data"
         Me.Size = New Size(800, 600)
         Me.StartPosition = FormStartPosition.CenterScreen
@@ -41,7 +40,7 @@ Public Class CashierAdd
         Me.Controls.Add(productLabel)
 
         With productComboBox
-            .Location = New Point(50, 20)
+            .Location = New Point(120, 20)
             .Size = New Size(200, 30)
             .DropDownStyle = ComboBoxStyle.DropDownList
         End With
@@ -70,7 +69,7 @@ Public Class CashierAdd
             .Text = "Selesai"
             .Location = New Point(100, 90)
         End With
-        AddHandler finishButton.Click, AddressOf FinishButton_Click ' Menangani event Click untuk finishButton
+        AddHandler finishButton.Click, AddressOf FinishButton_Click
         Me.Controls.Add(finishButton)
 
         ' Inisialisasi ListBox
@@ -78,16 +77,15 @@ Public Class CashierAdd
             .Location = New Point(20, 130)
             .Size = New Size(740, 400)
         End With
-        Me.Controls.Add(productsListBox) ' Menambahkan ListBox ke Form
+        Me.Controls.Add(productsListBox)
     End Sub
 
     Private Async Sub CashierAdd_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         Try
-            Dim data As List(Of Produk) = Await Task.Run(Function() dbClient.GetAllBarang())
+            Dim data As List(Of Dashboard.Produk) = Await Task.Run(Function() dbClient.GetAllBarang())
 
             productComboBox.Items.Clear()
-            For Each produk As Produk In data
-                ' Menambahkan nama produk dan kode barang ke ComboBox
+            For Each produk As Dashboard.Produk In data
                 productComboBox.Items.Add(produk.kode_barang & " - " & produk.nama_barang & " (" & produk.qty & ")")
             Next
 
@@ -132,10 +130,13 @@ Public Class CashierAdd
         Dim id_transaksi As Integer = dbClient.GenerateTransactionId() ' Ganti dengan metode untuk menghasilkan ID transaksi
 
         If dbClient.AddTransaction(id_transaksi, productsList) Then
+            MessageBox.Show("Transaksi Sukses!.", "Informasi", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            Dim CashierDashboard As New CashierSystem(dbClient, userData)
+            Me.Hide()
+            CashierDashboard.ShowDialog()
             Me.Close()
-            dashboardForm.ReloadData()
         Else
-            MessageBox.Show("Terjadi kesalahan saat menyimpan transaksi.")
+            MessageBox.Show("Terjadi kesalahan saat menyimpan transaksi.", "Kesalahan", MessageBoxButtons.OK, MessageBoxIcon.Error)
         End If
     End Sub
 

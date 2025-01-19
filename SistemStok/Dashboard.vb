@@ -283,7 +283,9 @@ Public Class Dashboard
 
     Private Sub CashierSystem_Click(sender As Object, e As EventArgs)
         Dim cashierForm As New CashierSystem(dbClient, userData)
+        Me.Hide()
         cashierForm.ShowDialog()
+        Me.Close()
     End Sub
 
     Private Sub AddLabelToTable(tablePanel As TableLayoutPanel, key As String, value As String, row As Integer)

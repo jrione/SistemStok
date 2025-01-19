@@ -141,11 +141,22 @@ Public Class CashierSystem
 
     Private Sub DashboardButton_Click(sender As Object, e As EventArgs)
         Dim dashboardForm As New Dashboard(dbClient, userData)
+        Me.Hide()
         dashboardForm.ShowDialog()
+        Me.Close()
     End Sub
     Private Sub AddButton_Click(sender As Object, e As EventArgs)
-        Dim dashboardForm As New Dashboard(dbClient, userData)
-        dashboardForm.ShowDialog()
+        Dim addTransactionForm As New CashierAdd(dbClient, userData)
+        Me.Hide()
+        addTransactionForm.ShowDialog()
+        Me.Close()
+    End Sub
+
+    Private Sub DialogForm_FormClosing(sender As Object, e As FormClosingEventArgs) Handles Me.FormClosing
+        Dim result As DialogResult = MessageBox.Show("Apakah Anda yakin ingin menutup dialog ini?", "Konfirmasi", MessageBoxButtons.YesNo, MessageBoxIcon.Question)
+        If result = DialogResult.No Then
+            e.Cancel = True
+        End If
     End Sub
 
 End Class

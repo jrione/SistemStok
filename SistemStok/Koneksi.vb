@@ -287,7 +287,7 @@ Public Class Koneksi
     Public Function GetAllTransactions() As List(Of CashierSystem.Transaksi)
         Dim transactions As New List(Of CashierSystem.Transaksi)()
 
-        Dim query As String = "SELECT td.id_transaksi,td.kodebarang,b.namabarang,td.jumlah,td.total_harga,td.created_at FROM transaksi_detail as td JOIN barang as b ON td.kodebarang=b.kodebarang"
+        Dim query As String = "SELECT td.id_transaksi,td.kodebarang,b.namabarang,td.jumlah,td.total_harga,td.created_at FROM transaksi_detail as td JOIN barang as b ON td.kodebarang=b.kodebarang ORDER BY td.created_at DESC"
         Dim conn As NpgsqlConnection = Connect()
         Dim cmd As New NpgsqlCommand(query, conn)
 
