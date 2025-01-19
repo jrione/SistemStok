@@ -136,7 +136,7 @@ Public Class AddDataForm
     Private Sub AddButton_Click(sender As Object, e As EventArgs)
         ' Mengambil data dari kontrol
         With NewProduct
-            .nama_barang = nameTextBox.Text
+            .nama_barang = CapitalizeWords(nameTextBox.Text).Trim()
             .harga = priceTextBox.Text
             .qty = qtyTextBox.Text
             .kategori = categoryTextBox.Text
@@ -187,4 +187,14 @@ Public Class AddDataForm
             MessageBox.Show("Gagal nemabah barang.", "Kesalahan", MessageBoxButtons.OK, MessageBoxIcon.Error)
         End If
     End Sub
+
+    Function CapitalizeWords(ByVal str As String) As String
+        Dim words As String() = str.Split(" "c) ' Memisahkan string menjadi array kata
+        For i As Integer = 0 To words.Length - 1
+            If words(i).Length > 0 Then
+                words(i) = Char.ToUpper(words(i)(0)) & words(i).Substring(1).ToLower() ' Mengubah huruf pertama menjadi besar
+            End If
+        Next
+        Return String.Join(" ", words) ' Menggabungkan kembali kata-kata menjadi string
+    End Function
 End Class

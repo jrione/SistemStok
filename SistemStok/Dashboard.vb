@@ -8,6 +8,9 @@ Public Class Dashboard
     Dim TinggiPanel As Integer = 800
     Dim PanjangPanel As Integer = 600
 
+    Private WithEvents timer As New Timer()
+    Private tgl As New Label()
+
     Public Structure Produk
         Public kode_barang As String
         Public nama_barang As String
@@ -110,6 +113,19 @@ Public Class Dashboard
             .Margin = New Padding(5, 20, 5, 5)
         End With
         headerContentPanel.Controls.Add(welcomeLabel)
+
+        With tgl
+            .Font = New Font("Arial", 10, FontStyle.Regular)
+            .AutoSize = True
+            .TextAlign = ContentAlignment.MiddleLeft
+            .Margin = New Padding(5, 0, 5, 5)
+        End With
+        headerContentPanel.Controls.Add(tgl)
+
+        ' Inisialisasi Timer
+        timer.Interval = 1000 ' Set interval ke 1000 ms (1 detik)
+        timer.Start() ' Mulai timer
+        UpdateDateTime()
 
         Dim addButton As New Button()
         With addButton
@@ -293,6 +309,14 @@ Public Class Dashboard
         Dim kodeBarang As String = button.Tag.ToString()
         Dim editForm As New EditDataForm(kodeBarang, dbClient, Me)
         editForm.ShowDialog()
+    End Sub
 
+    Private Sub UpdateDateTime()
+        Dim tgld As DateTime = DateTime.Now
+        tgl.Text = tgld.ToString("yyyy-MM-dd HH:mm:ss") ' Format tanggal dan waktu
+    End Sub
+
+    Private Sub Timer_Tick(sender As Object, e As EventArgs) Handles timer.Tick
+        UpdateDateTime() ' Perbarui tanggal dan waktu setiap detik
     End Sub
 End Class
