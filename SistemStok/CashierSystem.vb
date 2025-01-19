@@ -152,7 +152,7 @@ Public Class CashierSystem
         Me.Close()
     End Sub
 
-    Private Sub DialogForm_FormClosing(sender As Object, e As FormClosingEventArgs) Handles Me.FormClosing
+    Private Sub DialogForm_FormClosing(sender As Object, e As FormClosingEventArgs) Handles MyBase.FormClosing
         Dim result As DialogResult = MessageBox.Show("Apakah Anda yakin ingin menutup dialog ini?", "Konfirmasi", MessageBoxButtons.YesNo, MessageBoxIcon.Question)
         If result = DialogResult.No Then
             e.Cancel = True
