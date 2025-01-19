@@ -192,7 +192,7 @@ Public Class Dashboard
 
                 Dim image As Image
                 Using ms As New IO.MemoryStream(imageBytes)
-                    image = Image.FromStream(ms)
+                    image = image.FromStream(ms)
                 End Using
 
                 Dim itemPanel As New FlowLayoutPanel()
@@ -285,6 +285,7 @@ Public Class Dashboard
         'Dim cashierForm As New CashierSystem()
         'cashierForm.ShowDialog()
         Dim cashierForm As New CashierAdd(dbClient)
+        Dim cashierForm As New CashierSystem(dbClient, userData)
         cashierForm.ShowDialog()
     End Sub
 
