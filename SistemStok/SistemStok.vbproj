@@ -321,6 +321,12 @@
     <Compile Include="AddData.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="CashierSystem.Designer.vb">
+      <DependentUpon>CashierSystem.vb</DependentUpon>
+    </Compile>
+    <Compile Include="CashierSystem.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="EditData.Designer.vb">
       <DependentUpon>EditData.vb</DependentUpon>
     </Compile>

@@ -120,7 +120,27 @@ Public Class Dashboard
             .Margin = New Padding(5, 15, 5, 5)
         End With
         AddHandler addButton.Click, AddressOf AddButton_Click
-        headerContentPanel.Controls.Add(addButton)
+
+        Dim cashierButton As New Button()
+        With cashierButton
+            .Text = "Sistem Kasir"
+            .Font = New Font("Arial", 10, FontStyle.Bold)
+            .AutoSize = True
+            .BackColor = Color.DarkOrange
+            .Margin = New Padding(5, 15, 5, 5)
+        End With
+        AddHandler cashierButton.Click, AddressOf CashierSystem_Click
+
+        Dim buttonPanel As New FlowLayoutPanel()
+        With buttonPanel
+            .FlowDirection = FlowDirection.LeftToRight
+            .AutoSize = True
+            .Margin = New Padding(0)
+        End With
+
+        buttonPanel.Controls.Add(addButton)
+        buttonPanel.Controls.Add(cashierButton)
+        headerContentPanel.Controls.Add(buttonPanel)
 
 
         headerTable.Controls.Add(headerContentPanel, 0, 0)
@@ -243,6 +263,11 @@ Public Class Dashboard
     Private Sub AddButton_Click(sender As Object, e As EventArgs)
         Dim addForm As New AddDataForm(dbClient, Me)
         addForm.ShowDialog()
+    End Sub
+
+    Private Sub CashierSystem_Click(sender As Object, e As EventArgs)
+        Dim cashierForm As New CashierSystem()
+        cashierForm.ShowDialog()
     End Sub
 
     Private Sub AddLabelToTable(tablePanel As TableLayoutPanel, key As String, value As String, row As Integer)
