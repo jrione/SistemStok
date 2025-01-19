@@ -274,4 +274,10 @@ Public Class Koneksi
         End Try
     End Function
 
+    Public Function GetAllTransactions() As List(Of CashierSystem.Transaksi)
+        Dim transactions As New List(Of CashierSystem.Transaksi)
+        ' Implementasikan query database untuk mendapatkan data transaksi.
+        Return transactions
+    End Function
+
 End Class
